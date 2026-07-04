@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+	title="About — PixelForge"
+	description="PixelForge is a single-purpose, free browser-based image converter. Learn why it exists, how it works, and why your files never leave your device."
+	canonicalPath="/about"
+>
+	<section class="mx-auto max-w-2xl">
+		<h1 class="text-4xl font-bold tracking-tight sm:text-5xl">About PixelForge</h1>
+
+		<div class="mt-8 flex flex-col gap-6 text-base leading-relaxed text-[#5C4F3D]">
+			<p>
+				PixelForge does one thing: it converts image files from one format
+				to another, entirely inside your browser. There's no account to
+				create, no upload to wait on, and no server that ever sees your
+				files.
+			</p>
+			<p>
+				We built it as a single-purpose tool on purpose. Rather than bundling
+				a dozen unrelated utilities behind one confusing homepage, PixelForge
+				is exactly, only, an image converter &mdash; so it loads fast, stays
+				focused, and does the one job well.
+			</p>
+			<h2 class="mt-4 text-2xl font-bold tracking-tight text-[#2B2013]">
+				How it works
+			</h2>
+			<p>
+				When you choose or drop a file, your browser decodes the image
+				locally and draws it onto a hidden canvas element &mdash; the same
+				machinery your browser already uses to display images on any
+				webpage. That canvas is then re-encoded into whichever format you
+				picked (PNG, JPEG, WebP, GIF, or BMP) and handed back to you as a
+				normal downloadable file. Two formats your browser can't read
+				natively &mdash; HEIC/HEIF (the format iPhones save photos in) and
+				TIFF &mdash; are decoded on-device with small, purpose-built
+				libraries before the same canvas pipeline takes over.
+			</p>
+			<p>
+				Because everything happens on your device, nothing you convert is
+				ever transmitted, logged, or stored anywhere. Close the tab and it's
+				gone, exactly as if you'd never opened it.
+			</p>
+			<h2 class="mt-4 text-2xl font-bold tracking-tight text-[#2B2013]">
+				Why it's free
+			</h2>
+			<p>
+				PixelForge is supported by small, unobtrusive advertising rather than
+				subscriptions or paywalls. There's nothing to sign up for and no
+				limit on how many images you convert.
+			</p>
+		</div>
+	</section>
+</Layout>

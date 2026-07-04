@@ -1,0 +1,612 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+	title="PixelForge — Convert Any Image Format, Instantly"
+	description="Free browser-based image converter. Convert JPG, PNG, WebP, GIF, BMP, AVIF, SVG, TIFF, and iPhone HEIC/HEIF images to PNG, JPEG, WebP, GIF, or BMP instantly — no uploads, no signup, 100% client-side."
+>
+	<section class="text-center">
+		<h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+			Convert any image, <span class="text-[#C9982E]">instantly</span>
+		</h1>
+		<p class="mx-auto mt-4 max-w-2xl text-lg text-[#5C4F3D]">
+			A small, confident tool that converts images entirely in your browser
+			&mdash; no uploads, no accounts, no waiting.
+		</p>
+	</section>
+
+	<section class="mx-auto mt-10 max-w-2xl text-sm leading-relaxed text-[#8A7E68]">
+		<p>
+			PixelForge converts image files from one format to another without ever
+			uploading them anywhere. When you choose files, your browser decodes
+			each image and redraws it onto a hidden canvas, then re-encodes that
+			canvas into the format you pick. That's the same underlying technology
+			browsers already use to display images, so conversion is fast and the
+			result is a normal image file you can download straight away. Input
+			supports almost any image your browser can display &mdash; JPG, PNG,
+			WebP, GIF, BMP, AVIF, and SVG &mdash; plus two formats decoded
+			on-device with a small helper library since browsers can't read them
+			natively: iPhone <strong class="text-[#2B2013]">HEIC/HEIF</strong>
+			photos and <strong class="text-[#2B2013]">TIFF</strong> files (scans,
+			some cameras). Output can be
+			<strong class="text-[#2B2013]">PNG</strong>,
+			<strong class="text-[#2B2013]">JPEG</strong>,
+			<strong class="text-[#2B2013]">WebP</strong>,
+			<strong class="text-[#2B2013]">GIF</strong>, or
+			<strong class="text-[#2B2013]">BMP</strong>. PNG/BMP are lossless,
+			GIF is capped at 256 colors (best for flat graphics, not photos),
+			JPEG and WebP are lossy with a quality slider to balance file size
+			against sharpness. You can convert multiple images in one batch, and
+			each file is processed independently so one bad file won't stop the
+			rest. Raw camera formats (CR2, NEF, ARW, DNG) aren't supported &mdash;
+			they need proprietary demosaicing that can't run reasonably in a
+			browser.
+		</p>
+	</section>
+
+	<section class="mx-auto mt-10 max-w-2xl">
+		<!-- Drop zone -->
+		<div
+			id="drop-zone"
+			class="cursor-pointer rounded-xl border-2 border-dashed border-[#E8DFC8] bg-white p-10 text-center shadow-sm transition hover:border-[#C9982E]/60"
+		>
+			<input
+				id="file-input"
+				type="file"
+				accept="image/*,.heic,.heif,.tif,.tiff"
+				multiple
+				class="hidden"
+			/>
+			<svg
+				class="mx-auto h-10 w-10 text-[#C9982E]"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="1.5"
+					d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 12v9m0-9l-3 3m3-3l3 3"
+				></path>
+			</svg>
+			<p class="mt-3 font-medium text-[#2B2013]">
+				Drop images here, or <span class="text-[#C9982E] underline"
+					>browse</span
+				>
+			</p>
+			<p class="mt-1 text-xs text-[#8A7E68]">
+				JPG, PNG, WebP, GIF, BMP, AVIF, SVG, TIFF, HEIC/HEIF &middot; multiple
+				files supported
+			</p>
+		</div>
+
+		<!-- Controls -->
+		<div
+			class="mt-6 grid grid-cols-1 gap-4 rounded-xl border border-[#E8DFC8] bg-white p-6 shadow-sm sm:grid-cols-2"
+		>
+			<div>
+				<label
+					for="format-select"
+					class="block text-sm font-medium text-[#2B2013]"
+				>
+					Output format
+				</label>
+				<select
+					id="format-select"
+					class="mt-2 w-full rounded-lg border border-[#E8DFC8] bg-white px-3 py-2 text-sm text-[#2B2013] focus:border-[#C9982E] focus:outline-none focus:ring-1 focus:ring-[#C9982E]"
+				>
+					<option value="image/png">PNG</option>
+					<option value="image/jpeg">JPEG</option>
+					<option value="image/webp">WebP</option>
+					<option value="image/gif">GIF</option>
+					<option value="image/bmp">BMP</option>
+				</select>
+			</div>
+
+			<div id="quality-wrapper" class="hidden">
+				<label
+					for="quality-slider"
+					class="flex items-center justify-between text-sm font-medium text-[#2B2013]"
+				>
+					<span>Quality</span>
+					<span id="quality-value" class="text-[#C9982E]">0.92</span>
+				</label>
+				<input
+					id="quality-slider"
+					type="range"
+					min="0"
+					max="1"
+					step="0.01"
+					value="0.92"
+					class="mt-3 w-full accent-[#C9982E]"
+				/>
+			</div>
+		</div>
+
+		<button
+			id="convert-btn"
+			disabled
+			class="mt-6 w-full rounded-xl bg-[#C9982E] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#B8860B] disabled:cursor-not-allowed disabled:bg-[#E8DFC8] disabled:text-[#8A7E68]"
+		>
+			Convert
+		</button>
+
+		<!-- Results -->
+		<div id="results" class="mt-8 flex flex-col gap-4"></div>
+	</section>
+
+	<section class="mx-auto mt-16 max-w-2xl border-t border-[#E8DFC8] pt-8 text-center">
+		<p class="text-sm text-[#8A7E68]">
+			Want to know more?
+			<a href={`${import.meta.env.BASE_URL}about`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">About this tool</a>
+			&middot;
+			<a href={`${import.meta.env.BASE_URL}faq`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">FAQ</a>
+			&middot;
+			<a href={`${import.meta.env.BASE_URL}privacy`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">Privacy Policy</a>
+		</p>
+	</section>
+
+	<script>
+		type QueueItem = {
+			id: string;
+			file: File;
+		};
+
+		// Escape any user-controlled string (filenames) before it is ever
+		// interpolated into innerHTML, to prevent DOM/script injection from a
+		// maliciously named file.
+		const escapeHtml = (value: string): string =>
+			value
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;')
+				.replace(/'/g, '&#39;');
+
+		const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
+		const fileInput = document.getElementById(
+			'file-input',
+		) as HTMLInputElement;
+		const formatSelect = document.getElementById(
+			'format-select',
+		) as HTMLSelectElement;
+		const qualityWrapper = document.getElementById(
+			'quality-wrapper',
+		) as HTMLDivElement;
+		const qualitySlider = document.getElementById(
+			'quality-slider',
+		) as HTMLInputElement;
+		const qualityValue = document.getElementById(
+			'quality-value',
+		) as HTMLSpanElement;
+		const convertBtn = document.getElementById(
+			'convert-btn',
+		) as HTMLButtonElement;
+		const resultsEl = document.getElementById('results') as HTMLDivElement;
+
+		let queue: QueueItem[] = [];
+
+		const updateQualityVisibility = () => {
+			// GIF/BMP have no lossy-quality knob — GIF is always 256-color,
+			// BMP is always uncompressed.
+			const needsQuality =
+				formatSelect.value === 'image/jpeg' ||
+				formatSelect.value === 'image/webp';
+			qualityWrapper.classList.toggle('hidden', !needsQuality);
+		};
+
+		formatSelect.addEventListener('change', updateQualityVisibility);
+		updateQualityVisibility();
+
+		qualitySlider.addEventListener('input', () => {
+			qualityValue.textContent = Number(qualitySlider.value).toFixed(2);
+		});
+
+		const baseName = (name: string): string => {
+			const idx = name.lastIndexOf('.');
+			return idx > 0 ? name.slice(0, idx) : name;
+		};
+
+		// canvas.toBlob() can't encode GIF or BMP in any browser, so those two
+		// are hand-rolled: GIF via the gifenc quantizer/encoder, BMP via a
+		// direct BITMAPINFOHEADER writer (uncompressed 24-bit is ~15 lines).
+		const encodeGif = async (canvas: HTMLCanvasElement): Promise<Blob> => {
+			const { GIFEncoder, quantize, applyPalette } = await import('gifenc');
+			const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+			const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+			const palette = quantize(data, 256);
+			const index = applyPalette(data, palette);
+			const gif = GIFEncoder();
+			gif.writeFrame(index, canvas.width, canvas.height, { palette });
+			gif.finish();
+			return new Blob([gif.bytes()], { type: 'image/gif' });
+		};
+
+		const encodeBmp = (canvas: HTMLCanvasElement): Blob => {
+			const width = canvas.width;
+			const height = canvas.height;
+			const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+			const { data } = ctx.getImageData(0, 0, width, height);
+
+			const rowSize = Math.floor((24 * width + 31) / 32) * 4;
+			const pixelArraySize = rowSize * height;
+			const fileSize = 54 + pixelArraySize;
+			const buffer = new ArrayBuffer(fileSize);
+			const view = new DataView(buffer);
+
+			// BITMAPFILEHEADER
+			view.setUint8(0, 0x42); // 'B'
+			view.setUint8(1, 0x4d); // 'M'
+			view.setUint32(2, fileSize, true);
+			view.setUint32(6, 0, true);
+			view.setUint32(10, 54, true);
+
+			// BITMAPINFOHEADER
+			view.setUint32(14, 40, true);
+			view.setInt32(18, width, true);
+			view.setInt32(22, height, true); // positive height = bottom-up rows
+			view.setUint16(26, 1, true);
+			view.setUint16(28, 24, true);
+			view.setUint32(30, 0, true); // BI_RGB, no compression
+			view.setUint32(34, pixelArraySize, true);
+			view.setInt32(38, 2835, true);
+			view.setInt32(42, 2835, true);
+			view.setUint32(46, 0, true);
+			view.setUint32(50, 0, true);
+
+			let offset = 54;
+			for (let y = height - 1; y >= 0; y--) {
+				for (let x = 0; x < width; x++) {
+					const srcIdx = (y * width + x) * 4;
+					view.setUint8(offset++, data[srcIdx + 2]); // B
+					view.setUint8(offset++, data[srcIdx + 1]); // G
+					view.setUint8(offset++, data[srcIdx]); // R
+				}
+				for (let p = 0; p < rowSize - width * 3; p++) {
+					view.setUint8(offset++, 0);
+				}
+			}
+
+			return new Blob([buffer], { type: 'image/bmp' });
+		};
+
+		const renderQueuePreview = () => {
+			convertBtn.disabled = queue.length === 0;
+		};
+
+		const addFiles = (files: FileList | File[]) => {
+			// HEIC/HEIF/TIFF files are often reported with an empty or
+			// non-image MIME type by the OS/browser, so also allow by extension.
+			const incoming = Array.from(files).filter(
+				(f) =>
+					f.type.startsWith('image/') ||
+					/\.(heic|heif|tif|tiff)$/i.test(f.name),
+			);
+			for (const file of incoming) {
+				queue.push({
+					id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+					file,
+				});
+			}
+			renderQueuePreview();
+		};
+
+		// File input change
+		fileInput.addEventListener('change', () => {
+			if (fileInput.files && fileInput.files.length > 0) {
+				addFiles(fileInput.files);
+			}
+		});
+
+		// Click to browse
+		dropZone.addEventListener('click', () => fileInput.click());
+
+		// Drag and drop
+		['dragenter', 'dragover'].forEach((evtName) => {
+			dropZone.addEventListener(evtName, (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				dropZone.classList.add('border-[#C9982E]/60');
+			});
+		});
+
+		['dragleave', 'drop'].forEach((evtName) => {
+			dropZone.addEventListener(evtName, (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				dropZone.classList.remove('border-[#C9982E]/60');
+			});
+		});
+
+		dropZone.addEventListener('drop', (e) => {
+			const dt = e.dataTransfer;
+			if (dt && dt.files && dt.files.length > 0) {
+				addFiles(dt.files);
+			}
+		});
+
+		const createStatusCard = (item: QueueItem): HTMLDivElement => {
+			const card = document.createElement('div');
+			card.className = 'rounded-xl border border-[#E8DFC8] bg-white p-4 shadow-sm';
+			card.id = `card-${item.id}`;
+			// Filename is user-controlled (from the OS file picker / drag-drop),
+			// so it MUST be escaped before going into innerHTML.
+			card.innerHTML = `
+				<div class="flex items-center gap-4">
+					<div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#E8DFC8] bg-[#FAF6EC]">
+						<div class="thumb-slot text-xs text-[#8A7E68]">...</div>
+					</div>
+					<div class="min-w-0 flex-1">
+						<p class="truncate text-sm font-medium text-[#2B2013]">${escapeHtml(item.file.name)}</p>
+						<p class="status-text mt-1 text-xs text-[#8A7E68]">Waiting&hellip;</p>
+					</div>
+					<div class="action-slot shrink-0"></div>
+				</div>
+			`;
+			return card;
+		};
+
+		const setStatus = (card: HTMLDivElement, text: string, isError = false) => {
+			const statusEl = card.querySelector('.status-text');
+			if (statusEl) {
+				// text is our own status string, never raw user input — safe to
+				// set as textContent (not innerHTML) regardless.
+				statusEl.textContent = text;
+				statusEl.className = isError
+					? 'status-text mt-1 text-xs text-red-500'
+					: 'status-text mt-1 text-xs text-[#8A7E68]';
+			}
+		};
+
+		const setThumb = (card: HTMLDivElement, url: string) => {
+			const slot = card.querySelector('.thumb-slot');
+			if (slot) {
+				slot.innerHTML = '';
+				const img = document.createElement('img');
+				img.src = url;
+				img.className = 'h-full w-full object-cover';
+				img.alt = 'Converted preview';
+				slot.replaceWith(img);
+			}
+		};
+
+		const setAction = (
+			card: HTMLDivElement,
+			url: string,
+			filename: string,
+		) => {
+			const slot = card.querySelector('.action-slot');
+			if (slot) {
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = filename;
+				link.textContent = 'Download';
+				link.className =
+					'inline-block rounded-lg bg-[#C9982E] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#B8860B]';
+				slot.innerHTML = '';
+				slot.appendChild(link);
+			}
+		};
+
+		const convertOne = (item: QueueItem, mime: string, quality: number) => {
+			return new Promise<void>(async (resolve) => {
+				const card = document.getElementById(
+					`card-${item.id}`,
+				) as HTMLDivElement | null;
+				if (!card) {
+					resolve();
+					return;
+				}
+
+				setStatus(card, 'Loading…');
+
+				const isHeic =
+					/\.(heic|heif)$/i.test(item.file.name) ||
+					item.file.type === 'image/heic' ||
+					item.file.type === 'image/heif';
+				const isTiff =
+					/\.(tif|tiff)$/i.test(item.file.name) ||
+					item.file.type === 'image/tiff';
+
+				let sourceBlob: Blob = item.file;
+				if (isTiff) {
+					try {
+						setStatus(card, 'Decoding TIFF…');
+						const UTIF = (await import('utif2')).default;
+						const arrayBuffer = await item.file.arrayBuffer();
+						const ifds = UTIF.decode(arrayBuffer);
+						if (!ifds || ifds.length === 0) {
+							throw new Error('no image found in this TIFF file');
+						}
+						const ifd = ifds[0];
+						UTIF.decodeImage(arrayBuffer, ifd);
+						const rgba = UTIF.toRGBA8(ifd);
+						const tiffCanvas = document.createElement('canvas');
+						tiffCanvas.width = ifd.width;
+						tiffCanvas.height = ifd.height;
+						const tiffCtx = tiffCanvas.getContext('2d');
+						if (!tiffCtx) throw new Error('canvas not supported');
+						const imageData = new ImageData(
+							new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.length),
+							ifd.width,
+							ifd.height,
+						);
+						tiffCtx.putImageData(imageData, 0, 0);
+						const tiffBlob = await new Promise<Blob | null>((res) =>
+							tiffCanvas.toBlob(res, 'image/png'),
+						);
+						if (!tiffBlob) throw new Error('could not encode decoded TIFF as PNG');
+						sourceBlob = tiffBlob;
+					} catch (err) {
+						setStatus(
+							card,
+							`Error: could not decode this TIFF file (${
+								err instanceof Error ? err.message : 'unsupported variant'
+							})`,
+							true,
+						);
+						resolve();
+						return;
+					}
+				}
+				if (isHeic) {
+					try {
+						setStatus(card, 'Decoding HEIC…');
+						const libheif = await import('libheif-js/wasm-bundle');
+						const decoder = new libheif.HeifDecoder();
+						const arrayBuffer = await item.file.arrayBuffer();
+						const images = decoder.decode(arrayBuffer);
+						if (!images || images.length === 0) {
+							throw new Error('no image found in this HEIC file');
+						}
+						const heicImage = images[0];
+						const width = heicImage.get_width();
+						const height = heicImage.get_height();
+						const heicCanvas = document.createElement('canvas');
+						heicCanvas.width = width;
+						heicCanvas.height = height;
+						const heicCtx = heicCanvas.getContext('2d');
+						if (!heicCtx) throw new Error('canvas not supported');
+						const imageData = heicCtx.createImageData(width, height);
+						await new Promise<void>((res, rej) => {
+							heicImage.display(imageData, (displayData: unknown) => {
+								if (!displayData) {
+									rej(new Error('HEIF pixel decode failed'));
+									return;
+								}
+								res();
+							});
+						});
+						heicCtx.putImageData(imageData, 0, 0);
+						const heicBlob = await new Promise<Blob | null>((res) =>
+							heicCanvas.toBlob(res, 'image/png'),
+						);
+						if (!heicBlob) throw new Error('could not encode decoded HEIC as PNG');
+						sourceBlob = heicBlob;
+					} catch (err) {
+						setStatus(
+							card,
+							`Error: could not decode this HEIC file (${
+								err instanceof Error ? err.message : 'unsupported variant'
+							})`,
+							true,
+						);
+						resolve();
+						return;
+					}
+				}
+
+				const objectUrl = URL.createObjectURL(sourceBlob);
+				const img = new Image();
+
+				img.onload = async () => {
+					try {
+						setStatus(card, 'Converting…');
+						const canvas = document.createElement('canvas');
+						canvas.width = img.naturalWidth;
+						canvas.height = img.naturalHeight;
+
+						if (canvas.width === 0 || canvas.height === 0) {
+							throw new Error('Image has zero dimensions');
+						}
+
+						const ctx = canvas.getContext('2d');
+						if (!ctx) {
+							throw new Error('Canvas not supported');
+						}
+
+						// Flatten transparency onto white for formats with no
+						// alpha channel (JPEG has none; our BMP writer is 24-bit).
+						if (mime === 'image/jpeg' || mime === 'image/bmp') {
+							ctx.fillStyle = '#ffffff';
+							ctx.fillRect(0, 0, canvas.width, canvas.height);
+						}
+
+						ctx.drawImage(img, 0, 0);
+
+						let blob: Blob | null;
+						let ext: string;
+						if (mime === 'image/gif') {
+							blob = await encodeGif(canvas);
+							ext = 'gif';
+						} else if (mime === 'image/bmp') {
+							blob = encodeBmp(canvas);
+							ext = 'bmp';
+						} else {
+							blob = await new Promise<Blob | null>((res) =>
+								canvas.toBlob(
+									res,
+									mime,
+									mime === 'image/png' ? undefined : quality,
+								),
+							);
+							ext =
+								mime === 'image/jpeg'
+									? 'jpg'
+									: mime === 'image/webp'
+										? 'webp'
+										: 'png';
+						}
+
+						URL.revokeObjectURL(objectUrl);
+						if (!blob) {
+							setStatus(card, 'Conversion failed (encoder error)', true);
+							resolve();
+							return;
+						}
+						const outUrl = URL.createObjectURL(blob);
+						const filename = `${baseName(item.file.name)}.${ext}`;
+						setThumb(card, outUrl);
+						setStatus(card, `Done — ${(blob.size / 1024).toFixed(1)} KB`);
+						setAction(card, outUrl, filename);
+						resolve();
+					} catch (err) {
+						URL.revokeObjectURL(objectUrl);
+						setStatus(
+							card,
+							`Error: ${err instanceof Error ? err.message : 'conversion failed'}`,
+							true,
+						);
+						resolve();
+					}
+				};
+
+				img.onerror = () => {
+					URL.revokeObjectURL(objectUrl);
+					setStatus(card, 'Error: could not read this image (corrupt or unsupported file)', true);
+					resolve();
+				};
+
+				img.src = objectUrl;
+			});
+		};
+
+		convertBtn.addEventListener('click', async () => {
+			if (queue.length === 0) return;
+
+			convertBtn.disabled = true;
+			convertBtn.textContent = 'Converting…';
+			resultsEl.innerHTML = '';
+
+			const mime = formatSelect.value;
+			const quality = Number(qualitySlider.value);
+
+			const cards: HTMLDivElement[] = [];
+			for (const item of queue) {
+				const card = createStatusCard(item);
+				resultsEl.appendChild(card);
+				cards.push(card);
+			}
+
+			// Process sequentially so status updates are readable and memory stays bounded
+			for (const item of queue) {
+				await convertOne(item, mime, quality);
+			}
+
+			convertBtn.disabled = false;
+			convertBtn.textContent = 'Convert';
+		});
+	</script>
+</Layout>

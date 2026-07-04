@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+	description: string;
+	canonicalPath?: string;
+}
+
+const { title, description, canonicalPath = '/' } = Astro.props;
+const siteUrl = 'https://toprmrproducer.github.io';
+const base = import.meta.env.BASE_URL;
+const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+const canonical = new URL(
+	`${normalizedBase}${canonicalPath.replace(/^\//, '')}`,
+	siteUrl,
+).toString();
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+		<link rel="canonical" href={canonical} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="generator" content={Astro.generator} />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body class="min-h-screen bg-[#FAF6EC] text-[#5C4F3D] antialiased">
+		<header class="border-b border-[#E8DFC8]">
+			<nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
+				<a
+					href={import.meta.env.BASE_URL}
+					class="font-[Fraunces] text-xl font-bold tracking-tight text-[#2B2013]"
+				>
+					Pixel<span class="text-[#C9982E]">Forge</span>
+				</a>
+				<div class="flex items-center gap-6 text-sm font-medium text-[#5C4F3D]">
+					<a href={`${normalizedBase}about`} class="transition hover:text-[#C9982E]">About</a>
+					<a href={`${normalizedBase}faq`} class="transition hover:text-[#C9982E]">FAQ</a>
+				</div>
+			</nav>
+		</header>
+
+		<main class="mx-auto max-w-5xl px-6 py-14">
+			<slot />
+		</main>
+
+		<footer class="mt-24 border-t border-[#E8DFC8]">
+			<div class="mx-auto max-w-5xl px-6 py-10 text-sm text-[#5C4F3D]">
+				<p>
+					All conversions run locally in your browser. Nothing you upload is
+					ever sent to a server.
+				</p>
+				<div class="mt-4 flex flex-wrap gap-6">
+					<a href={`${normalizedBase}about`} class="hover:text-[#C9982E]">About</a>
+					<a href={`${normalizedBase}privacy`} class="hover:text-[#C9982E]">Privacy Policy</a>
+					<a href={`${normalizedBase}faq`} class="hover:text-[#C9982E]">FAQ</a>
+				</div>
+				<p class="mt-4 text-[#8A7E68]">
+					&copy; {new Date().getFullYear()} PixelForge
+				</p>
+			</div>
+		</footer>
+	</body>
+</html>

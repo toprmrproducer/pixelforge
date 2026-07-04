@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+	title="Page Not Found — PixelForge"
+	description="The page you're looking for doesn't exist. Head back to PixelForge's image converter."
+	canonicalPath="/404"
+>
+	<section class="mx-auto max-w-xl text-center">
+		<p class="font-[Fraunces] text-7xl font-bold tracking-tight text-[#C9982E]">
+			404
+		</p>
+		<h1 class="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+			Page not found
+		</h1>
+		<p class="mt-4 text-base text-[#5C4F3D]">
+			The page you're looking for doesn't exist or may have moved.
+		</p>
+		<a
+			href={import.meta.env.BASE_URL}
+			class="mt-8 inline-block rounded-xl bg-[#C9982E] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#B8860B]"
+		>
+			Back to PixelForge
+		</a>
+	</section>
+</Layout>

@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const faqs = [
+	{
+		q: 'Is PixelForge really free?',
+		a: 'Yes. There is no account, no paywall, and no limit on how many images you convert. The tool is supported by lightweight advertising.',
+	},
+	{
+		q: 'Do my images get uploaded anywhere?',
+		a: 'No. Every conversion happens locally in your browser using canvas and WebAssembly. Your files never leave your device.',
+	},
+	{
+		q: 'What formats can I convert from?',
+		a: 'Anything your browser can natively display — JPG, PNG, WebP, GIF, BMP, AVIF, and SVG — plus HEIC/HEIF (iPhone photos) and TIFF, which are decoded on-device with a small helper library.',
+	},
+	{
+		q: 'What formats can I convert to?',
+		a: 'PNG, JPEG, WebP, GIF, or BMP. PNG and BMP are lossless; GIF is limited to 256 colors; JPEG and WebP are lossy with an adjustable quality slider.',
+	},
+	{
+		q: 'Can I convert multiple images at once?',
+		a: 'Yes. Drop or select as many files as you like — each is converted independently, so one problematic file will not stop the rest of the batch.',
+	},
+	{
+		q: 'Why isn\'t RAW (CR2, NEF, ARW, DNG) supported?',
+		a: 'RAW camera formats require proprietary demosaicing algorithms that are not practical to run inside a browser, so they are intentionally out of scope.',
+	},
+	{
+		q: 'Does PixelForge work on mobile?',
+		a: 'Yes, PixelForge runs in any modern mobile browser, including on iPhone for HEIC photos straight from your camera roll.',
+	},
+];
+---
+
+<Layout
+	title="FAQ — PixelForge"
+	description="Frequently asked questions about PixelForge, the free browser-based image converter: supported formats, privacy, and how conversion works."
+	canonicalPath="/faq"
+>
+	<section class="mx-auto max-w-2xl">
+		<h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+			Frequently asked questions
+		</h1>
+
+		<div class="mt-10 flex flex-col gap-4">
+			{
+				faqs.map((item) => (
+					<details class="group rounded-xl border border-[#E8DFC8] bg-white p-5 shadow-sm open:shadow-md">
+						<summary class="cursor-pointer list-none font-semibold text-[#2B2013] marker:content-none">
+							<span class="flex items-center justify-between gap-4">
+								{item.q}
+								<span class="shrink-0 text-[#C9982E] transition group-open:rotate-45">
+									+
+								</span>
+							</span>
+						</summary>
+						<p class="mt-3 text-sm leading-relaxed text-[#5C4F3D]">
+							{item.a}
+						</p>
+					</details>
+				))
+			}
+		</div>
+	</section>
+</Layout>
