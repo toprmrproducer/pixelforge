@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL;
+const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 ---
 
 <Layout
@@ -140,11 +143,11 @@ import Layout from '../layouts/Layout.astro';
 	<section class="mx-auto mt-16 max-w-2xl border-t border-[#E8DFC8] pt-8 text-center">
 		<p class="text-sm text-[#8A7E68]">
 			Want to know more?
-			<a href={`${import.meta.env.BASE_URL}about`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">About this tool</a>
+			<a href={`${normalizedBase}about`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">About this tool</a>
 			&middot;
-			<a href={`${import.meta.env.BASE_URL}faq`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">FAQ</a>
+			<a href={`${normalizedBase}faq`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">FAQ</a>
 			&middot;
-			<a href={`${import.meta.env.BASE_URL}privacy`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">Privacy Policy</a>
+			<a href={`${normalizedBase}privacy`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">Privacy Policy</a>
 		</p>
 	</section>
 
