@@ -10,16 +10,16 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 	description="Free browser-based image converter. Convert JPG, PNG, WebP, GIF, BMP, AVIF, SVG, TIFF, and iPhone HEIC/HEIF images to PNG, JPEG, WebP, GIF, or BMP instantly — no uploads, no signup, 100% client-side."
 >
 	<section class="text-center">
-		<h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+		<h1 class="text-[2.6rem] leading-[1.1] font-extrabold tracking-tight sm:text-[3.25rem]">
 			Convert any image, <span class="text-[#C9982E]">instantly</span>
 		</h1>
-		<p class="mx-auto mt-4 max-w-2xl text-lg text-[#5C4F3D]">
+		<p class="mx-auto mt-5 max-w-2xl text-lg text-[#4A4234]">
 			A small, confident tool that converts images entirely in your browser
 			&mdash; no uploads, no accounts, no waiting.
 		</p>
 	</section>
 
-	<section class="mx-auto mt-10 max-w-2xl text-sm leading-relaxed text-[#8A7E68]">
+	<section class="mx-auto mt-12 max-w-2xl text-[15px] leading-relaxed text-[#8A7E68]">
 		<p>
 			PixelForge converts image files from one format to another without ever
 			uploading them anywhere. When you choose files, your browser decodes
@@ -30,29 +30,35 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 			supports almost any image your browser can display &mdash; JPG, PNG,
 			WebP, GIF, BMP, AVIF, and SVG &mdash; plus two formats decoded
 			on-device with a small helper library since browsers can't read them
-			natively: iPhone <strong class="text-[#2B2013]">HEIC/HEIF</strong>
-			photos and <strong class="text-[#2B2013]">TIFF</strong> files (scans,
+			natively: iPhone <strong class="text-[#221B10]">HEIC/HEIF</strong>
+			photos and <strong class="text-[#221B10]">TIFF</strong> files (scans,
 			some cameras). Output can be
-			<strong class="text-[#2B2013]">PNG</strong>,
-			<strong class="text-[#2B2013]">JPEG</strong>,
-			<strong class="text-[#2B2013]">WebP</strong>,
-			<strong class="text-[#2B2013]">GIF</strong>, or
-			<strong class="text-[#2B2013]">BMP</strong>. PNG/BMP are lossless,
+			<strong class="text-[#221B10]">PNG</strong>,
+			<strong class="text-[#221B10]">JPEG</strong>,
+			<strong class="text-[#221B10]">WebP</strong>,
+			<strong class="text-[#221B10]">GIF</strong>, or
+			<strong class="text-[#221B10]">BMP</strong>. PNG/BMP are lossless,
 			GIF is capped at 256 colors (best for flat graphics, not photos),
 			JPEG and WebP are lossy with a quality slider to balance file size
-			against sharpness. You can convert multiple images in one batch, and
-			each file is processed independently so one bad file won't stop the
-			rest. Raw camera formats (CR2, NEF, ARW, DNG) aren't supported &mdash;
-			they need proprietary demosaicing that can't run reasonably in a
-			browser.
+			against sharpness. Transparent images flattened to JPEG or BMP are
+			composited onto a background color you pick (white by default). You can
+			convert multiple images in one batch, and each file is processed
+			independently so one bad file won't stop the rest. After a file
+			converts you can optionally crop, rotate, or resize it right here
+			before downloading. Raw camera formats (CR2, NEF, ARW, DNG) aren't
+			supported &mdash; they need proprietary demosaicing that can't run
+			reasonably in a browser.
 		</p>
 	</section>
 
-	<section class="mx-auto mt-10 max-w-2xl">
+	<section class="mx-auto mt-12 max-w-2xl">
 		<!-- Drop zone -->
 		<div
 			id="drop-zone"
-			class="cursor-pointer rounded-xl border-2 border-dashed border-[#E8DFC8] bg-white p-10 text-center shadow-sm transition hover:border-[#C9982E]/60"
+			role="button"
+			tabindex="0"
+			aria-label="Choose images to convert"
+			class="cursor-pointer rounded-xl border-2 border-dashed border-[#EAE4D6] bg-[#FAF8F3] p-10 text-center shadow-sm transition hover:border-[#C9982E]/60 focus:border-[#C9982E]/60 focus:outline-none"
 		>
 			<input
 				id="file-input"
@@ -74,31 +80,50 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 					d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 12v9m0-9l-3 3m3-3l3 3"
 				></path>
 			</svg>
-			<p class="mt-3 font-medium text-[#2B2013]">
+			<p class="mt-3 font-semibold text-[#221B10]">
 				Drop images here, or <span class="text-[#C9982E] underline"
 					>browse</span
 				>
 			</p>
-			<p class="mt-1 text-xs text-[#8A7E68]">
+			<p class="mt-1 text-sm text-[#8A7E68]">
 				JPG, PNG, WebP, GIF, BMP, AVIF, SVG, TIFF, HEIC/HEIF &middot; multiple
 				files supported
 			</p>
 		</div>
 
+		<!-- Selected files queue -->
+		<div
+			id="queue-panel"
+			class="mt-6 hidden rounded-xl border border-[#EAE4D6] bg-[#FAF8F3] p-5 shadow-sm"
+		>
+			<div class="flex items-center justify-between gap-4">
+				<p id="queue-count" class="text-sm font-bold text-[#221B10]"></p>
+				<button
+					id="queue-clear"
+					type="button"
+					class="rounded-lg px-3 py-2 text-sm font-semibold text-[#8A7E68] transition hover:text-[#C9982E]"
+				>
+					Clear all
+				</button>
+			</div>
+			<ul id="queue-list" class="mt-3 flex flex-col gap-2"></ul>
+			<p id="queue-note" class="mt-3 hidden text-sm font-medium text-red-600"></p>
+		</div>
+
 		<!-- Controls -->
 		<div
-			class="mt-6 grid grid-cols-1 gap-4 rounded-xl border border-[#E8DFC8] bg-white p-6 shadow-sm sm:grid-cols-2"
+			class="mt-6 grid grid-cols-1 gap-5 rounded-xl border border-[#EAE4D6] bg-[#FAF8F3] p-6 shadow-sm sm:grid-cols-2"
 		>
 			<div>
 				<label
 					for="format-select"
-					class="block text-sm font-medium text-[#2B2013]"
+					class="block text-sm font-bold text-[#221B10]"
 				>
 					Output format
 				</label>
 				<select
 					id="format-select"
-					class="mt-2 w-full rounded-lg border border-[#E8DFC8] bg-white px-3 py-2 text-sm text-[#2B2013] focus:border-[#C9982E] focus:outline-none focus:ring-1 focus:ring-[#C9982E]"
+					class="mt-2 h-11 w-full rounded-lg border border-[#EAE4D6] bg-white px-3 text-[15px] text-[#221B10] focus:border-[#C9982E] focus:outline-none focus:ring-1 focus:ring-[#C9982E]"
 				>
 					<option value="image/png">PNG</option>
 					<option value="image/jpeg">JPEG</option>
@@ -111,7 +136,7 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 			<div id="quality-wrapper" class="hidden">
 				<label
 					for="quality-slider"
-					class="flex items-center justify-between text-sm font-medium text-[#2B2013]"
+					class="flex items-center justify-between text-sm font-bold text-[#221B10]"
 				>
 					<span>Quality</span>
 					<span id="quality-value" class="text-[#C9982E]">0.92</span>
@@ -123,15 +148,33 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 					max="1"
 					step="0.01"
 					value="0.92"
-					class="mt-3 w-full accent-[#C9982E]"
+					class="mt-4 h-11 w-full accent-[#C9982E]"
 				/>
+			</div>
+
+			<div id="bg-wrapper" class="hidden">
+				<label for="bg-color" class="block text-sm font-bold text-[#221B10]">
+					Background fill
+					<span class="font-medium text-[#8A7E68]">(for transparent areas)</span>
+				</label>
+				<div class="mt-2 flex items-center gap-3">
+					<input
+						id="bg-color"
+						type="color"
+						value="#ffffff"
+						class="h-11 w-16 cursor-pointer rounded-lg border border-[#EAE4D6] bg-white p-1"
+					/>
+					<span id="bg-value" class="text-sm font-medium text-[#8A7E68]"
+						>#FFFFFF</span
+					>
+				</div>
 			</div>
 		</div>
 
 		<button
 			id="convert-btn"
 			disabled
-			class="mt-6 w-full rounded-xl bg-[#C9982E] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[#B8860B] disabled:cursor-not-allowed disabled:bg-[#E8DFC8] disabled:text-[#8A7E68]"
+			class="mt-6 w-full rounded-xl bg-[#C9982E] px-6 py-3.5 text-[17px] font-bold text-white shadow-sm transition hover:bg-[#B8860B] disabled:cursor-not-allowed disabled:bg-[#EAE4D6] disabled:text-[#8A7E68]"
 		>
 			Convert
 		</button>
@@ -140,21 +183,204 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 		<div id="results" class="mt-8 flex flex-col gap-4"></div>
 	</section>
 
-	<section class="mx-auto mt-16 max-w-2xl border-t border-[#E8DFC8] pt-8 text-center">
-		<p class="text-sm text-[#8A7E68]">
+	<!-- Snake boredom-filler: HEIC/TIFF decode + large images can take a beat -->
+	<section class="mx-auto mt-14 max-w-[820px]">
+		<details class="rounded-2xl border border-[#eae4d6] bg-[#faf8f3] p-5">
+			<summary class="cursor-pointer select-none font-[Sora] text-lg font-bold text-[#221b10]">Converting a big file or a HEIC photo? Play a quick game of Snake while you wait</summary>
+			<div class="mt-4 flex flex-col items-center gap-3">
+				<canvas id="snake-canvas" width="320" height="320" class="rounded-lg border border-[#eae4d6] bg-white" style="touch-action:none"></canvas>
+				<div class="flex items-center gap-4 text-sm text-[#4a4234]">
+					<span>Score: <b id="snake-score">0</b></span>
+					<button id="snake-restart" class="rounded-lg bg-[#c9982e] px-4 py-2 font-semibold text-white transition hover:bg-[#b8860b]">Restart</button>
+				</div>
+				<p class="text-xs text-[#8a7e68]">Arrow keys / WASD, or swipe on mobile.</p>
+			</div>
+		</details>
+	</section>
+	<script>
+		(() => {
+			const cv = document.getElementById('snake-canvas'); if (!cv) return;
+			const ctx = cv.getContext('2d'); const G = 16, N = 20; let snake, dir, food, score, alive, loop;
+			const scoreEl = document.getElementById('snake-score');
+			function reset(){ snake=[{x:10,y:10}]; dir={x:0,y:0}; food=rndFood(); score=0; alive=true; if(scoreEl)scoreEl.textContent='0'; }
+			function rndFood(){ return {x:Math.floor(Math.random()*N), y:Math.floor(Math.random()*N)}; }
+			function step(){
+				if(!alive) return;
+				if(dir.x===0&&dir.y===0){ draw(); return; }
+				const h={x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+				if(h.x<0||h.y<0||h.x>=N||h.y>=N||snake.some(s=>s.x===h.x&&s.y===h.y)){ alive=false; draw(); return; }
+				snake.unshift(h);
+				if(h.x===food.x&&h.y===food.y){ score++; if(scoreEl)scoreEl.textContent=String(score); food=rndFood(); } else snake.pop();
+				draw();
+			}
+			function draw(){
+				ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,cv.width,cv.height);
+				ctx.fillStyle='#c9982e'; snake.forEach(s=>ctx.fillRect(s.x*G+1,s.y*G+1,G-2,G-2));
+				ctx.fillStyle='#221b10'; ctx.fillRect(food.x*G+3,food.y*G+3,G-6,G-6);
+				if(!alive){ ctx.fillStyle='rgba(34,27,16,0.72)'; ctx.fillRect(0,0,cv.width,cv.height); ctx.fillStyle='#fff'; ctx.font='bold 20px Sora, sans-serif'; ctx.textAlign='center'; ctx.fillText('Game Over — Restart', cv.width/2, cv.height/2); }
+			}
+			function turn(x,y){ if((x!==0&&dir.x===0)||(y!==0&&dir.y===0)) dir={x,y}; }
+			window.addEventListener('keydown', e=>{ const k=e.key.toLowerCase(); if(['arrowup','w'].includes(k))turn(0,-1); else if(['arrowdown','s'].includes(k))turn(0,1); else if(['arrowleft','a'].includes(k))turn(-1,0); else if(['arrowright','d'].includes(k))turn(1,0); else return; e.preventDefault(); }, {passive:false});
+			let tx,ty; cv.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+			cv.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; if(Math.abs(dx)>Math.abs(dy)) turn(dx>0?1:-1,0); else turn(0,dy>0?1:-1); },{passive:true});
+			document.getElementById('snake-restart')?.addEventListener('click', reset);
+			reset(); loop=setInterval(step, 110);
+		})();
+	</script>
+
+	<section class="mx-auto mt-16 max-w-2xl border-t border-[#EAE4D6] pt-8 text-center">
+		<p class="text-[15px] text-[#8A7E68]">
 			Want to know more?
-			<a href={`${normalizedBase}about`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">About this tool</a>
+			<a href={`${normalizedBase}about`} class="font-semibold text-[#C9982E] underline hover:text-[#B8860B]">About this tool</a>
 			&middot;
-			<a href={`${normalizedBase}faq`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">FAQ</a>
+			<a href={`${normalizedBase}faq`} class="font-semibold text-[#C9982E] underline hover:text-[#B8860B]">FAQ</a>
 			&middot;
-			<a href={`${normalizedBase}privacy`} class="font-medium text-[#C9982E] underline hover:text-[#B8860B]">Privacy Policy</a>
+			<a href={`${normalizedBase}privacy`} class="font-semibold text-[#C9982E] underline hover:text-[#B8860B]">Privacy Policy</a>
 		</p>
 	</section>
+
+	<!-- Post-conversion editor modal -->
+	<div
+		id="editor-modal"
+		class="fixed inset-0 z-50 hidden items-center justify-center bg-[#221B10]/40 p-4"
+	>
+		<div
+			id="editor-panel"
+			class="max-h-[92vh] w-full max-w-[720px] overflow-y-auto rounded-xl border border-[#EAE4D6] bg-white p-6 shadow-xl"
+		>
+			<div class="flex items-center justify-between gap-4">
+				<h2 class="text-2xl font-bold tracking-tight text-[#221B10]">
+					Edit image
+				</h2>
+				<button
+					id="editor-close"
+					type="button"
+					aria-label="Close editor"
+					class="flex h-11 w-11 items-center justify-center rounded-lg text-xl text-[#8A7E68] transition hover:bg-[#FAF8F3] hover:text-[#221B10]"
+				>
+					&times;
+				</button>
+			</div>
+			<p class="mt-1 text-sm text-[#8A7E68]">
+				Drag on the image to select a crop area. Edits apply before download
+				&mdash; nothing leaves your browser.
+			</p>
+
+			<div
+				id="editor-stage"
+				class="relative mt-5 flex min-h-[200px] touch-none items-center justify-center overflow-hidden rounded-lg border border-[#EAE4D6] bg-[#FAF8F3] p-2 select-none"
+			>
+				<canvas id="editor-canvas" class="max-h-[46vh] max-w-full"></canvas>
+				<div
+					id="crop-rect"
+					class="pointer-events-none absolute hidden border-2 border-[#C9982E] bg-[#C9982E]/15"
+				>
+				</div>
+			</div>
+			<p id="editor-dims" class="mt-2 text-sm font-medium text-[#8A7E68]"></p>
+
+			<div class="mt-4 flex flex-wrap items-center gap-3">
+				<button
+					id="editor-rotate"
+					type="button"
+					class="rounded-lg border border-[#EAE4D6] bg-[#FAF8F3] px-4 py-2.5 text-sm font-bold text-[#221B10] transition hover:border-[#C9982E]/60"
+				>
+					Rotate 90&deg;
+				</button>
+				<button
+					id="editor-crop-apply"
+					type="button"
+					disabled
+					class="rounded-lg border border-[#EAE4D6] bg-[#FAF8F3] px-4 py-2.5 text-sm font-bold text-[#221B10] transition hover:border-[#C9982E]/60 disabled:cursor-not-allowed disabled:text-[#8A7E68]"
+				>
+					Apply crop
+				</button>
+				<button
+					id="editor-crop-clear"
+					type="button"
+					class="hidden rounded-lg px-3 py-2.5 text-sm font-semibold text-[#8A7E68] transition hover:text-[#C9982E]"
+				>
+					Clear selection
+				</button>
+			</div>
+
+			<div class="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-[#EAE4D6] bg-[#FAF8F3] p-4">
+				<div>
+					<label for="resize-w" class="block text-xs font-bold text-[#221B10]"
+						>Width</label
+					>
+					<input
+						id="resize-w"
+						type="number"
+						min="1"
+						max="16384"
+						class="mt-1 h-11 w-28 rounded-lg border border-[#EAE4D6] bg-white px-3 text-[15px] text-[#221B10] focus:border-[#C9982E] focus:outline-none"
+					/>
+				</div>
+				<div>
+					<label for="resize-h" class="block text-xs font-bold text-[#221B10]"
+						>Height</label
+					>
+					<input
+						id="resize-h"
+						type="number"
+						min="1"
+						max="16384"
+						class="mt-1 h-11 w-28 rounded-lg border border-[#EAE4D6] bg-white px-3 text-[15px] text-[#221B10] focus:border-[#C9982E] focus:outline-none"
+					/>
+				</div>
+				<label class="flex h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-[#4A4234]">
+					<input id="resize-lock" type="checkbox" checked class="h-4 w-4 accent-[#C9982E]" />
+					Lock aspect
+				</label>
+				<button
+					id="editor-resize-apply"
+					type="button"
+					class="h-11 rounded-lg border border-[#EAE4D6] bg-white px-4 text-sm font-bold text-[#221B10] transition hover:border-[#C9982E]/60"
+				>
+					Apply resize
+				</button>
+			</div>
+
+			<div class="mt-6 flex flex-wrap justify-end gap-3">
+				<button
+					id="editor-reset"
+					type="button"
+					class="rounded-xl px-5 py-3 text-sm font-semibold text-[#8A7E68] transition hover:text-[#C9982E]"
+				>
+					Reset
+				</button>
+				<button
+					id="editor-cancel"
+					type="button"
+					class="rounded-xl border border-[#EAE4D6] bg-white px-5 py-3 text-sm font-bold text-[#221B10] transition hover:border-[#C9982E]/60"
+				>
+					Cancel
+				</button>
+				<button
+					id="editor-save"
+					type="button"
+					class="rounded-xl bg-[#C9982E] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#B8860B]"
+				>
+					Save changes
+				</button>
+			</div>
+		</div>
+	</div>
 
 	<script>
 		type QueueItem = {
 			id: string;
 			file: File;
+		};
+
+		type ResultRecord = {
+			url: string;
+			mime: string;
+			quality: number;
+			bg: string;
+			baseName: string;
+			ext: string;
 		};
 
 		// Escape any user-controlled string (filenames) before it is ever
@@ -166,7 +392,8 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')
 				.replace(/"/g, '&quot;')
-				.replace(/'/g, '&#39;');
+				.replace(/'/g, '&#39;')
+				.replace(/`/g, '&#96;');
 
 		const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
 		const fileInput = document.getElementById(
@@ -184,32 +411,67 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 		const qualityValue = document.getElementById(
 			'quality-value',
 		) as HTMLSpanElement;
+		const bgWrapper = document.getElementById('bg-wrapper') as HTMLDivElement;
+		const bgColor = document.getElementById('bg-color') as HTMLInputElement;
+		const bgValue = document.getElementById('bg-value') as HTMLSpanElement;
 		const convertBtn = document.getElementById(
 			'convert-btn',
 		) as HTMLButtonElement;
 		const resultsEl = document.getElementById('results') as HTMLDivElement;
+		const queuePanel = document.getElementById(
+			'queue-panel',
+		) as HTMLDivElement;
+		const queueCount = document.getElementById(
+			'queue-count',
+		) as HTMLParagraphElement;
+		const queueList = document.getElementById('queue-list') as HTMLUListElement;
+		const queueClear = document.getElementById(
+			'queue-clear',
+		) as HTMLButtonElement;
+		const queueNote = document.getElementById(
+			'queue-note',
+		) as HTMLParagraphElement;
 
 		let queue: QueueItem[] = [];
+		let converting = false;
+		// Converted outputs, keyed by queue-item id — powers the Download link
+		// and the post-conversion editor.
+		const resultsStore = new Map<string, ResultRecord>();
 
-		const updateQualityVisibility = () => {
+		const updateFormatOptions = () => {
 			// GIF/BMP have no lossy-quality knob — GIF is always 256-color,
-			// BMP is always uncompressed.
+			// BMP is always uncompressed. JPEG and BMP have no alpha channel,
+			// so they get the background-fill color picker.
 			const needsQuality =
 				formatSelect.value === 'image/jpeg' ||
 				formatSelect.value === 'image/webp';
+			const needsBg =
+				formatSelect.value === 'image/jpeg' ||
+				formatSelect.value === 'image/bmp';
 			qualityWrapper.classList.toggle('hidden', !needsQuality);
+			bgWrapper.classList.toggle('hidden', !needsBg);
 		};
 
-		formatSelect.addEventListener('change', updateQualityVisibility);
-		updateQualityVisibility();
+		formatSelect.addEventListener('change', updateFormatOptions);
+		updateFormatOptions();
 
 		qualitySlider.addEventListener('input', () => {
 			qualityValue.textContent = Number(qualitySlider.value).toFixed(2);
 		});
 
+		bgColor.addEventListener('input', () => {
+			bgValue.textContent = bgColor.value.toUpperCase();
+		});
+
 		const baseName = (name: string): string => {
 			const idx = name.lastIndexOf('.');
 			return idx > 0 ? name.slice(0, idx) : name;
+		};
+
+		const formatBytes = (bytes: number): string => {
+			if (bytes >= 1024 * 1024)
+				return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+			return `${(bytes / 1024).toFixed(1)} KB`;
 		};
 
 		// canvas.toBlob() can't encode GIF or BMP in any browser, so those two
@@ -275,17 +537,98 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 			return new Blob([buffer], { type: 'image/bmp' });
 		};
 
-		const renderQueuePreview = () => {
-			convertBtn.disabled = queue.length === 0;
+		// Shared encoder used by both the convert pipeline and the editor.
+		// Flattens transparency in place (destination-over paints UNDER existing
+		// pixels, so no second full-size canvas is allocated — matters at 8000px).
+		const encodeCanvas = async (
+			canvas: HTMLCanvasElement,
+			mime: string,
+			quality: number,
+			bg: string,
+		): Promise<{ blob: Blob; ext: string }> => {
+			if (mime === 'image/jpeg' || mime === 'image/bmp') {
+				const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+				ctx.globalCompositeOperation = 'destination-over';
+				ctx.fillStyle = bg || '#ffffff';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.globalCompositeOperation = 'source-over';
+			}
+			if (mime === 'image/gif') {
+				return { blob: await encodeGif(canvas), ext: 'gif' };
+			}
+			if (mime === 'image/bmp') {
+				return { blob: encodeBmp(canvas), ext: 'bmp' };
+			}
+			const blob = await new Promise<Blob | null>((res) =>
+				canvas.toBlob(res, mime, mime === 'image/png' ? undefined : quality),
+			);
+			if (!blob) throw new Error('encoder error');
+			const ext =
+				mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png';
+			return { blob, ext };
 		};
+
+		const renderQueue = () => {
+			convertBtn.disabled = converting || queue.length === 0;
+			queuePanel.classList.toggle('hidden', queue.length === 0);
+			queueCount.textContent =
+				queue.length === 1
+					? '1 file ready to convert'
+					: `${queue.length} files ready to convert`;
+			queueList.innerHTML = '';
+			for (const item of queue) {
+				const li = document.createElement('li');
+				li.className =
+					'queue-item flex items-center justify-between gap-3 rounded-lg border border-[#EAE4D6] bg-white px-4 py-2.5';
+				const label = document.createElement('span');
+				label.className = 'min-w-0 flex-1 truncate text-sm font-medium text-[#221B10]';
+				// textContent, so the user-controlled filename is inert.
+				label.textContent = item.file.name;
+				const size = document.createElement('span');
+				size.className = 'shrink-0 text-xs text-[#8A7E68]';
+				size.textContent = formatBytes(item.file.size);
+				const remove = document.createElement('button');
+				remove.type = 'button';
+				remove.setAttribute('aria-label', `Remove ${item.file.name}`);
+				remove.className =
+					'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg text-[#8A7E68] transition hover:bg-[#FAF8F3] hover:text-red-600';
+				remove.textContent = '×';
+				remove.addEventListener('click', () => {
+					if (converting) return;
+					queue = queue.filter((q) => q.id !== item.id);
+					renderQueue();
+				});
+				li.append(label, size, remove);
+				queueList.appendChild(li);
+			}
+		};
+
+		const setQueueNote = (text: string) => {
+			queueNote.textContent = text;
+			queueNote.classList.toggle('hidden', text.length === 0);
+		};
+
+		queueClear.addEventListener('click', () => {
+			if (converting) return;
+			queue = [];
+			setQueueNote('');
+			renderQueue();
+		});
 
 		const addFiles = (files: FileList | File[]) => {
 			// HEIC/HEIF/TIFF files are often reported with an empty or
 			// non-image MIME type by the OS/browser, so also allow by extension.
-			const incoming = Array.from(files).filter(
+			const all = Array.from(files);
+			const incoming = all.filter(
 				(f) =>
 					f.type.startsWith('image/') ||
 					/\.(heic|heif|tif|tiff)$/i.test(f.name),
+			);
+			const skipped = all.length - incoming.length;
+			setQueueNote(
+				skipped > 0
+					? `${skipped} file${skipped === 1 ? '' : 's'} skipped — not a supported image format.`
+					: '',
 			);
 			for (const file of incoming) {
 				queue.push({
@@ -293,7 +636,7 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 					file,
 				});
 			}
-			renderQueuePreview();
+			renderQueue();
 		};
 
 		// File input change
@@ -301,10 +644,18 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 			if (fileInput.files && fileInput.files.length > 0) {
 				addFiles(fileInput.files);
 			}
+			// Reset so selecting the same file again re-fires 'change'.
+			fileInput.value = '';
 		});
 
-		// Click to browse
+		// Click / keyboard to browse
 		dropZone.addEventListener('click', () => fileInput.click());
+		dropZone.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				fileInput.click();
+			}
+		});
 
 		// Drag and drop
 		['dragenter', 'dragover'].forEach((evtName) => {
@@ -332,20 +683,21 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 
 		const createStatusCard = (item: QueueItem): HTMLDivElement => {
 			const card = document.createElement('div');
-			card.className = 'rounded-xl border border-[#E8DFC8] bg-white p-4 shadow-sm';
+			card.className =
+				'rounded-xl border border-[#EAE4D6] bg-[#FAF8F3] p-4 shadow-sm';
 			card.id = `card-${item.id}`;
 			// Filename is user-controlled (from the OS file picker / drag-drop),
 			// so it MUST be escaped before going into innerHTML.
 			card.innerHTML = `
-				<div class="flex items-center gap-4">
-					<div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#E8DFC8] bg-[#FAF6EC]">
+				<div class="flex flex-wrap items-center gap-4">
+					<div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#EAE4D6] bg-white">
 						<div class="thumb-slot text-xs text-[#8A7E68]">...</div>
 					</div>
 					<div class="min-w-0 flex-1">
-						<p class="truncate text-sm font-medium text-[#2B2013]">${escapeHtml(item.file.name)}</p>
-						<p class="status-text mt-1 text-xs text-[#8A7E68]">Waiting&hellip;</p>
+						<p class="truncate text-[15px] font-semibold text-[#221B10]">${escapeHtml(item.file.name)}</p>
+						<p class="status-text mt-1 text-sm text-[#8A7E68]">Waiting&hellip;</p>
 					</div>
-					<div class="action-slot shrink-0"></div>
+					<div class="action-slot flex shrink-0 items-center gap-2"></div>
 				</div>
 			`;
 			return card;
@@ -358,42 +710,51 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 				// set as textContent (not innerHTML) regardless.
 				statusEl.textContent = text;
 				statusEl.className = isError
-					? 'status-text mt-1 text-xs text-red-500'
-					: 'status-text mt-1 text-xs text-[#8A7E68]';
+					? 'status-text mt-1 text-sm text-red-600'
+					: 'status-text mt-1 text-sm text-[#8A7E68]';
 			}
 		};
 
 		const setThumb = (card: HTMLDivElement, url: string) => {
+			const existing = card.querySelector('img.thumb-img') as HTMLImageElement | null;
+			if (existing) {
+				existing.src = url;
+				return;
+			}
 			const slot = card.querySelector('.thumb-slot');
 			if (slot) {
-				slot.innerHTML = '';
 				const img = document.createElement('img');
 				img.src = url;
-				img.className = 'h-full w-full object-cover';
+				img.className = 'thumb-img h-full w-full object-cover';
 				img.alt = 'Converted preview';
 				slot.replaceWith(img);
 			}
 		};
 
-		const setAction = (
-			card: HTMLDivElement,
-			url: string,
-			filename: string,
-		) => {
+		const setAction = (card: HTMLDivElement, item: QueueItem) => {
+			const rec = resultsStore.get(item.id);
 			const slot = card.querySelector('.action-slot');
-			if (slot) {
-				const link = document.createElement('a');
-				link.href = url;
-				link.download = filename;
-				link.textContent = 'Download';
-				link.className =
-					'inline-block rounded-lg bg-[#C9982E] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#B8860B]';
-				slot.innerHTML = '';
-				slot.appendChild(link);
-			}
+			if (!slot || !rec) return;
+			slot.innerHTML = '';
+
+			const edit = document.createElement('button');
+			edit.type = 'button';
+			edit.textContent = 'Edit';
+			edit.className =
+				'inline-flex h-11 items-center rounded-lg border border-[#EAE4D6] bg-white px-4 text-sm font-bold text-[#221B10] transition hover:border-[#C9982E]/60';
+			edit.addEventListener('click', () => openEditor(item.id));
+
+			const link = document.createElement('a');
+			link.href = rec.url;
+			link.download = `${rec.baseName}.${rec.ext}`;
+			link.textContent = 'Download';
+			link.className =
+				'download-link inline-flex h-11 items-center rounded-lg bg-[#C9982E] px-4 text-sm font-bold text-white transition hover:bg-[#B8860B]';
+
+			slot.append(edit, link);
 		};
 
-		const convertOne = (item: QueueItem, mime: string, quality: number) => {
+		const convertOne = (item: QueueItem, mime: string, quality: number, bg: string) => {
 			return new Promise<void>(async (resolve) => {
 				const card = document.getElementById(
 					`card-${item.id}`,
@@ -520,50 +881,23 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 							throw new Error('Canvas not supported');
 						}
 
-						// Flatten transparency onto white for formats with no
-						// alpha channel (JPEG has none; our BMP writer is 24-bit).
-						if (mime === 'image/jpeg' || mime === 'image/bmp') {
-							ctx.fillStyle = '#ffffff';
-							ctx.fillRect(0, 0, canvas.width, canvas.height);
-						}
-
 						ctx.drawImage(img, 0, 0);
 
-						let blob: Blob | null;
-						let ext: string;
-						if (mime === 'image/gif') {
-							blob = await encodeGif(canvas);
-							ext = 'gif';
-						} else if (mime === 'image/bmp') {
-							blob = encodeBmp(canvas);
-							ext = 'bmp';
-						} else {
-							blob = await new Promise<Blob | null>((res) =>
-								canvas.toBlob(
-									res,
-									mime,
-									mime === 'image/png' ? undefined : quality,
-								),
-							);
-							ext =
-								mime === 'image/jpeg'
-									? 'jpg'
-									: mime === 'image/webp'
-										? 'webp'
-										: 'png';
-						}
+						const { blob, ext } = await encodeCanvas(canvas, mime, quality, bg);
 
 						URL.revokeObjectURL(objectUrl);
-						if (!blob) {
-							setStatus(card, 'Conversion failed (encoder error)', true);
-							resolve();
-							return;
-						}
 						const outUrl = URL.createObjectURL(blob);
-						const filename = `${baseName(item.file.name)}.${ext}`;
+						resultsStore.set(item.id, {
+							url: outUrl,
+							mime,
+							quality,
+							bg,
+							baseName: baseName(item.file.name),
+							ext,
+						});
 						setThumb(card, outUrl);
-						setStatus(card, `Done — ${(blob.size / 1024).toFixed(1)} KB`);
-						setAction(card, outUrl, filename);
+						setStatus(card, `Done — ${formatBytes(blob.size)}`);
+						setAction(card, item);
 						resolve();
 					} catch (err) {
 						URL.revokeObjectURL(objectUrl);
@@ -587,29 +921,304 @@ const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 		};
 
 		convertBtn.addEventListener('click', async () => {
-			if (queue.length === 0) return;
+			if (converting || queue.length === 0) return;
 
+			converting = true;
 			convertBtn.disabled = true;
 			convertBtn.textContent = 'Converting…';
+
+			// Release blob URLs from the previous batch before replacing it.
+			for (const rec of resultsStore.values()) {
+				URL.revokeObjectURL(rec.url);
+			}
+			resultsStore.clear();
 			resultsEl.innerHTML = '';
 
 			const mime = formatSelect.value;
 			const quality = Number(qualitySlider.value);
+			const bg = bgColor.value || '#ffffff';
 
-			const cards: HTMLDivElement[] = [];
-			for (const item of queue) {
-				const card = createStatusCard(item);
-				resultsEl.appendChild(card);
-				cards.push(card);
+			const batch = queue;
+			for (const item of batch) {
+				resultsEl.appendChild(createStatusCard(item));
 			}
 
 			// Process sequentially so status updates are readable and memory stays bounded
-			for (const item of queue) {
-				await convertOne(item, mime, quality);
+			for (const item of batch) {
+				await convertOne(item, mime, quality, bg);
 			}
 
-			convertBtn.disabled = false;
+			// The batch is finished — clear the queue so the next Convert never
+			// silently re-processes files from a previous run.
+			queue = [];
+			setQueueNote('');
+			converting = false;
 			convertBtn.textContent = 'Convert';
+			renderQueue();
+		});
+
+		// ------------------------------------------------------------------
+		// Post-conversion editor: crop (drag-select), rotate 90°, resize with
+		// aspect lock — all on canvas, re-encoded with the same settings the
+		// file was converted with.
+		// ------------------------------------------------------------------
+		const editorModal = document.getElementById('editor-modal') as HTMLDivElement;
+		const editorPanel = document.getElementById('editor-panel') as HTMLDivElement;
+		const editorStage = document.getElementById('editor-stage') as HTMLDivElement;
+		const editorCanvas = document.getElementById('editor-canvas') as HTMLCanvasElement;
+		const cropRect = document.getElementById('crop-rect') as HTMLDivElement;
+		const editorDims = document.getElementById('editor-dims') as HTMLParagraphElement;
+		const rotateBtn = document.getElementById('editor-rotate') as HTMLButtonElement;
+		const cropApplyBtn = document.getElementById('editor-crop-apply') as HTMLButtonElement;
+		const cropClearBtn = document.getElementById('editor-crop-clear') as HTMLButtonElement;
+		const resizeW = document.getElementById('resize-w') as HTMLInputElement;
+		const resizeH = document.getElementById('resize-h') as HTMLInputElement;
+		const resizeLock = document.getElementById('resize-lock') as HTMLInputElement;
+		const resizeApplyBtn = document.getElementById('editor-resize-apply') as HTMLButtonElement;
+		const editorClose = document.getElementById('editor-close') as HTMLButtonElement;
+		const editorCancel = document.getElementById('editor-cancel') as HTMLButtonElement;
+		const editorReset = document.getElementById('editor-reset') as HTMLButtonElement;
+		const editorSave = document.getElementById('editor-save') as HTMLButtonElement;
+
+		let editingId: string | null = null;
+		// Display-space crop selection (CSS px, relative to the canvas box).
+		let selection: { x: number; y: number; w: number; h: number } | null = null;
+		let dragStart: { x: number; y: number } | null = null;
+
+		const editorCtx = () =>
+			editorCanvas.getContext('2d') as CanvasRenderingContext2D;
+
+		const syncDims = () => {
+			editorDims.textContent = `${editorCanvas.width} × ${editorCanvas.height} px`;
+			resizeW.value = String(editorCanvas.width);
+			resizeH.value = String(editorCanvas.height);
+		};
+
+		const clearSelection = () => {
+			selection = null;
+			dragStart = null;
+			cropRect.classList.add('hidden');
+			cropApplyBtn.disabled = true;
+			cropClearBtn.classList.add('hidden');
+		};
+
+		const drawSelection = () => {
+			if (!selection) return;
+			const canvasBox = editorCanvas.getBoundingClientRect();
+			const stageBox = editorStage.getBoundingClientRect();
+			cropRect.style.left = `${canvasBox.left - stageBox.left + selection.x}px`;
+			cropRect.style.top = `${canvasBox.top - stageBox.top + selection.y}px`;
+			cropRect.style.width = `${selection.w}px`;
+			cropRect.style.height = `${selection.h}px`;
+			cropRect.classList.remove('hidden');
+		};
+
+		const canvasPoint = (e: PointerEvent) => {
+			const box = editorCanvas.getBoundingClientRect();
+			return {
+				x: Math.min(Math.max(e.clientX - box.left, 0), box.width),
+				y: Math.min(Math.max(e.clientY - box.top, 0), box.height),
+			};
+		};
+
+		editorStage.addEventListener('pointerdown', (e) => {
+			if (editingId === null) return;
+			e.preventDefault();
+			editorStage.setPointerCapture(e.pointerId);
+			dragStart = canvasPoint(e);
+			selection = { x: dragStart.x, y: dragStart.y, w: 0, h: 0 };
+			drawSelection();
+		});
+
+		editorStage.addEventListener('pointermove', (e) => {
+			if (!dragStart) return;
+			const p = canvasPoint(e);
+			selection = {
+				x: Math.min(dragStart.x, p.x),
+				y: Math.min(dragStart.y, p.y),
+				w: Math.abs(p.x - dragStart.x),
+				h: Math.abs(p.y - dragStart.y),
+			};
+			drawSelection();
+		});
+
+		editorStage.addEventListener('pointerup', () => {
+			dragStart = null;
+			if (selection && (selection.w < 5 || selection.h < 5)) {
+				clearSelection();
+				return;
+			}
+			if (selection) {
+				cropApplyBtn.disabled = false;
+				cropClearBtn.classList.remove('hidden');
+			}
+		});
+
+		cropClearBtn.addEventListener('click', clearSelection);
+
+		const replaceEditorCanvas = (next: HTMLCanvasElement) => {
+			editorCanvas.width = next.width;
+			editorCanvas.height = next.height;
+			editorCtx().drawImage(next, 0, 0);
+			clearSelection();
+			syncDims();
+		};
+
+		cropApplyBtn.addEventListener('click', () => {
+			if (!selection) return;
+			const box = editorCanvas.getBoundingClientRect();
+			const scaleX = editorCanvas.width / box.width;
+			const scaleY = editorCanvas.height / box.height;
+			const sx = Math.round(selection.x * scaleX);
+			const sy = Math.round(selection.y * scaleY);
+			const sw = Math.max(1, Math.round(selection.w * scaleX));
+			const sh = Math.max(1, Math.round(selection.h * scaleY));
+			const out = document.createElement('canvas');
+			out.width = Math.min(sw, editorCanvas.width - sx);
+			out.height = Math.min(sh, editorCanvas.height - sy);
+			const ctx = out.getContext('2d') as CanvasRenderingContext2D;
+			ctx.drawImage(editorCanvas, sx, sy, out.width, out.height, 0, 0, out.width, out.height);
+			replaceEditorCanvas(out);
+		});
+
+		rotateBtn.addEventListener('click', () => {
+			const out = document.createElement('canvas');
+			out.width = editorCanvas.height;
+			out.height = editorCanvas.width;
+			const ctx = out.getContext('2d') as CanvasRenderingContext2D;
+			ctx.translate(out.width, 0);
+			ctx.rotate(Math.PI / 2);
+			ctx.drawImage(editorCanvas, 0, 0);
+			replaceEditorCanvas(out);
+		});
+
+		const aspect = () => editorCanvas.width / editorCanvas.height;
+
+		resizeW.addEventListener('input', () => {
+			if (!resizeLock.checked) return;
+			const w = Number(resizeW.value);
+			if (w > 0) resizeH.value = String(Math.max(1, Math.round(w / aspect())));
+		});
+		resizeH.addEventListener('input', () => {
+			if (!resizeLock.checked) return;
+			const h = Number(resizeH.value);
+			if (h > 0) resizeW.value = String(Math.max(1, Math.round(h * aspect())));
+		});
+
+		resizeApplyBtn.addEventListener('click', () => {
+			const w = Math.round(Number(resizeW.value));
+			const h = Math.round(Number(resizeH.value));
+			if (!Number.isFinite(w) || !Number.isFinite(h) || w < 1 || h < 1 || w > 16384 || h > 16384) {
+				syncDims(); // restore valid values
+				return;
+			}
+			if (w === editorCanvas.width && h === editorCanvas.height) return;
+			const out = document.createElement('canvas');
+			out.width = w;
+			out.height = h;
+			const ctx = out.getContext('2d') as CanvasRenderingContext2D;
+			ctx.imageSmoothingEnabled = true;
+			ctx.imageSmoothingQuality = 'high';
+			ctx.drawImage(editorCanvas, 0, 0, w, h);
+			replaceEditorCanvas(out);
+		});
+
+		const loadIntoEditor = (url: string) =>
+			new Promise<void>((resolve, reject) => {
+				const img = new Image();
+				img.onload = () => {
+					editorCanvas.width = img.naturalWidth;
+					editorCanvas.height = img.naturalHeight;
+					editorCtx().drawImage(img, 0, 0);
+					resolve();
+				};
+				img.onerror = () => reject(new Error('could not load converted image'));
+				img.src = url;
+			});
+
+		const openEditor = async (id: string) => {
+			const rec = resultsStore.get(id);
+			if (!rec) return;
+			try {
+				await loadIntoEditor(rec.url);
+			} catch {
+				return;
+			}
+			editingId = id;
+			clearSelection();
+			syncDims();
+			editorModal.classList.remove('hidden');
+			editorModal.classList.add('flex');
+		};
+
+		const closeEditor = () => {
+			editingId = null;
+			clearSelection();
+			editorModal.classList.add('hidden');
+			editorModal.classList.remove('flex');
+			// Free the (possibly large) editor canvas buffer.
+			editorCanvas.width = 1;
+			editorCanvas.height = 1;
+		};
+
+		editorClose.addEventListener('click', closeEditor);
+		editorCancel.addEventListener('click', closeEditor);
+		editorModal.addEventListener('click', (e) => {
+			if (e.target === editorModal) closeEditor();
+		});
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && editingId !== null) closeEditor();
+		});
+
+		editorReset.addEventListener('click', async () => {
+			if (editingId === null) return;
+			const rec = resultsStore.get(editingId);
+			if (!rec) return;
+			await loadIntoEditor(rec.url);
+			clearSelection();
+			syncDims();
+		});
+
+		editorSave.addEventListener('click', async () => {
+			if (editingId === null) return;
+			const rec = resultsStore.get(editingId);
+			if (!rec) return;
+			editorSave.disabled = true;
+			editorSave.textContent = 'Saving…';
+			try {
+				const { blob, ext } = await encodeCanvas(
+					editorCanvas,
+					rec.mime,
+					rec.quality,
+					rec.bg,
+				);
+				URL.revokeObjectURL(rec.url);
+				rec.url = URL.createObjectURL(blob);
+				rec.ext = ext;
+				const card = document.getElementById(
+					`card-${editingId}`,
+				) as HTMLDivElement | null;
+				if (card) {
+					setThumb(card, rec.url);
+					setStatus(
+						card,
+						`Done — ${formatBytes(blob.size)} · edited (${editorCanvas.width} × ${editorCanvas.height})`,
+					);
+					const link = card.querySelector(
+						'a.download-link',
+					) as HTMLAnchorElement | null;
+					if (link) {
+						link.href = rec.url;
+						link.download = `${rec.baseName}.${rec.ext}`;
+					}
+				}
+				closeEditor();
+			} catch {
+				editorDims.textContent = 'Could not save edits — try again.';
+			} finally {
+				editorSave.disabled = false;
+				editorSave.textContent = 'Save changes';
+			}
 		});
 	</script>
 </Layout>
